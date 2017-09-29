@@ -17,8 +17,7 @@ patterns addressing this challange with compact prototypes.
 A use case appear if there are multi modalities in the experiment
 and each modality has its own set of metadata. It is not practical
 to show all metadata. For this reason, related metadata will be 
-presented based on For this reason, related metadata will be 
-presented based on selection.
+presented based on given selection.
 See `src/sp5_metadata_hierarchical_entry.html`
 
 ### Experimental Design: Dynamic definitions
