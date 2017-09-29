@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html>
+<!-- 
+ * 
+ * 
+ * A demo for experimental design.
+ *
+ * 
+ * Released under the MIT License
+ * --------------------------------------------------------------------------------
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2017 
+ * M. Suzen 
+ * The German Neuroinformatics Node
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy 
+ * of this software and associated documentation files (the "Software"), to deal 
+ * in the Software without restriction, including without limitation the rights 
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell 
+ * copies of the Software, and to permit persons to whom the Software is 
+ * furnished to do so, subject to the following conditions: 
+ *
+ * The above copyright notice and this permission notice shall be included in all 
+ * copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
+ * SOFTWARE.
+ * --------------------------------------------------------------------------------
+ *
+ -->
+
+<head>
+<title>A demo for task design and session.</title>
+<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.css">
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+<script>
+function uuidv4() {
+  // Function from 
+  // https://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript 
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
+var app = angular.module('sp5App', []);
+task_ctrl = function($scope) {
+  $scope.trial_design        = []
+  $scope.trial_count         = 0;
+  $scope.condition_count     = 0;
+  $scope.trial_error         = "";
+  $scope.condition_error     = "";
+  $scope.condition_design    = [];
+  $scope.design_condition_on = 0;
+  $scope.download_metadata = function() { $scope.download_metadata0();}
+  $scope.design_condition = function() {
+                                        if($scope.trial_design.length<1) {
+                                          $scope.condition_error  = "Define trials first!";
+                                         } else {
+                                          $scope.design_condition_on = 1;
+                                        }
+                                       }
+  $scope.design_condition_clear = function() {
+                                              $scope.design_condition_on = 0;
+                                              $scope.condition_design    = [];
+                                              $scope.condition_error  = "";
+                                             }
+  $scope.add_condition = function() {
+                                      $scope.condition_count++;
+                                      $scope.tasks = [];
+                                      $scope.condition_not_exist = true;
+                                      if($scope.new_condition == null) {
+                                        $scope.condition_error = "Empty condition name!";
+                                        $scope.$apply(); 
+                                      }
+                                      for(i=0;i<$scope.condition_design.length;i++){
+                                         if($scope.condition_design[i].name == $scope.new_condition) {
+                                           $scope.condition_error        = "Condition name exist!" ;
+                                           $scope.condition_not_exist = false;
+                                           $scope.$apply();
+                                          }
+                                      }
+                                      for(i=0;i<$scope.select_design_tasks.length;i++) {
+                                       $scope.tasks.push($scope.select_design_tasks[i].name)
+                                      }
+                                      if($scope.condition_not_exist) {
+                                        $scope.condition_design.push(
+                                               {
+                                                id: $scope.condition_count, 
+                                                uuid: uuidv4(), 
+                                                name: $scope.new_condition,
+                                                definition: $scope.new_condition_def,
+                                                tasks: $scope.tasks
+                                               }
+                                              )
+                                      }
+                                      $scope.new_condition = null
+                                      $scope.new_condition_def = null
+                                      $scope.select_design_tasks = ""
+                                    }
+  $scope.remove_condition = function(uuid) {
+                                        condition_design_new = [];
+                                        for(i=0;i<$scope.condition_design.length;i++) {
+                                          if($scope.condition_design[i].uuid != uuid) {
+                                            condition_design_new.push($scope.condition_design[i])
+                                          }
+                                        }
+                                        $scope.condition_design = condition_design_new; 
+                                        $scope.$apply();
+                                      }
+  $scope.remove_trial = function(uuid) {
+                                        trial_design_new = [];
+                                        if($scope.condition_design.length <1) {
+                                          for(i=0;i<$scope.trial_design.length;i++) {
+                                            if($scope.trial_design[i].uuid != uuid) {
+                                              trial_design_new.push($scope.trial_design[i])
+                                            }
+                                          }
+                                          $scope.trial_design = trial_design_new; 
+                                          $scope.$apply();
+                                        } else {
+                                          $scope.trial_error = "Can't delete trail, there is a condition using it."; 
+                                        } 
+                                      }
+  $scope.add_trial_clear = function() {
+                                       $scope.trial_design     = []
+                                       $scope.trial_count      = 0;
+                                       $scope.trial_error      = "";
+                                       $scope.new_trial     = null;
+                                       $scope.new_trial_def = null;
+                                       $scope.new_trial_ref = null;
+                                       $scope.design_condition_clear();
+                                       $scope.design_condition_on = 0;
+                                      }
+  $scope.add_trial = function() {
+                                 $scope.trial_error     = "";
+                                 $scope.trial_not_exist = true; 
+                                 if($scope.new_trial == null) {
+                                   $scope.trial_not_exist    = false
+                                   $scope.trial_error        = "Empty trial name!";
+                                   $scope.$apply(); 
+                                 }
+                                 for(i=0;i<$scope.trial_design.length;i++){
+                                   if($scope.trial_design[i].name == $scope.new_trial) {
+                                     $scope.trial_not_exist    = false
+                                     $scope.trial_error        = "Trial name exist!" ;
+                                     $scope.$apply();
+                                   }
+                                 }
+                                 if($scope.trial_not_exist) {
+                                   $scope.trial_count++;
+                                   $scope.trial_design.push( 
+                                                           {
+                                                            id: $scope.trial_count, 
+                                                            uuid: uuidv4(), 
+                                                            name: $scope.new_trial,
+                                                            definition: $scope.new_trial_def,
+                                                            reference: $scope.new_trial_ref
+                                                           }
+                                                          ); 
+                                   $scope.condition_error = "";
+                                                            }
+                               $scope.new_trial     = null;
+                               $scope.new_trial_def = null;
+                               $scope.new_trial_ref = null;   
+                               $scope.$apply();
+                              }
+                            } // controller
+app.controller('task_ctrl', task_ctrl);
+</script>
+</head>
+
+<body>
+<br>
+<h2>Pattern: Dynamic definition of a set of metadata and another set that depends on the arbitrary combination of the previous</h2>
+<h2>Metadata Entry for Experimental Design</h2>
+<p>
+Experimental design is related to metadata description of logical            <br>  
+partition of the actual experiment, such as sessions in neurophysiology. We  <br>
+develop a prototype to define metadata dynamically over a web interface. <br>            
+We only use <b>trial design</b> and <b>condition design</b>. Condition   <br>
+designs are defined as a combination of trial design items. Note that    <br>
+hieararcy is a bit more complicated in real experiments, as there are    <br>
+other sectioning such as <i>session</i>, <i>events</i> and               <br>
+<i>performance design</i> but essential pattern is covered here.
+<ul>
+  <li>
+       <b>trial designs</b><br>
+       An identification of a trial, for example a task behviour experiments. 
+  </li>
+  <li>
+       <b>condition design</b><br>
+       Usually defined as combination of trials. 
+  </li>
+</ul>
+</p>
+<h3>Example design</h3>
+A scenario appear in metadata of so called reach-to-grasp experiments <br>
+in the context of <a href="http://www.fz-juelich.de/inm/inm-6/EN/Forschung/Gruen/MotorBehavior.html?nn=724620">network interaction in motor cortex in relation to behavior</a>. 
+<ul>
+ <li>
+     Trial designs from reach-to-grasp: <br> 
+     <ul>
+       <li> Side grip / low force  (SGLF)       </li>
+       <li> Side grip / high force  (SGHF)      </li>
+       <li> Precision grip / low force  (PGLF)  </li>
+       <li> Precision grip / high force  (PFHF) </li> 
+       <li> Low force / side grip  (LFSG)       </li>
+     </ul>
+ </li>
+ <li>
+     Condition designs from reach-to-grasp: <br>
+     <ul>
+       <li>Grip first trials, all grip and force types (cnd_1): SGLF, SGHF, PGLF, PFHF</li>
+       <li>Force first trials, all force and grip types (cnd_2): SGLF, SGHF, PGLF, PFHF</li>
+       <li>Grip first trials, all grip types, but only low force (cnd_11): SGLF, PGLF</li>
+       <li>Grip first trials, all grip types, but only high force (cnd_12): SGHF, PGHF</li>
+       <li>Grip first trials, only side grip, but all force types (cnd_13): SGHF, SGLF</li>
+       <li>Grip first trials, only precision grip, but all force types (cnd_14): PGLF, PGHF</li>
+       <li>Force first trials, only low force, but all grip types (cnd_21): LFSG, LFPG</li>
+       <li>Force first trials, only high force, but all grip types (cnd_22): HFSG, HFPG</li>
+       <li>Force first trials, all force types, but only side grip (cnd_23): HFSG, LFSG</li>
+       <li>Force first trials, all force types, but only precision grip (cnd_24): HFPG, LFPG </li>
+       <li>Grip first trials, only side grip, only low force (cnd_131): SGLF </li>
+       <li>Grip first trials, only side grip, only high force (cnd_132): SGHF </li>
+       <li>Grip first trials, only side grip, force needs to be guessed (cnd_133): SGSG </li>
+       <li>Grip first trials, only precision grip, only low force (cnd_141): PGLF</li>
+       <li>Grip first trials, only precision grip, only high force (cnd_142): PGHF</li>
+       <li>Grip first trials, only precision grip, force needs to be guessed (cnd_144): PGPG</li>
+       <li>Force first trials, only low force, only side grip (cnd_213): LFSG</li>
+       <li>Force first trials, only low force, only precision grip (cnd_214): LFPG</li>
+       <li>Force first trials, only high force, only side grip (cnd_223): HFSG</li>
+       <li>Force first trials, only high force, only precision grip (cnd_224): HFPG</li>
+     </ul>
+ </li> 
+</ul>
+
+<hr>
+<h3>Prototype Interface</h3>
+Design a trial and construct condition based on trials. <br>
+<b>Example Workflow:</b> <br> Define cnd_12 and cnd_13
+<ol>
+  <li> Try to add empty trail. </li>
+  <li> Try to add condition. </li>
+  <li> Define trials SGHF, SGLF, PGHF. </li>
+  <li> Try to add SGHF again. </li>
+  <li> Try to add empty condition. </li>
+  <li> Define conditions cnd_12 and cnd_13. </li>
+  <li> Try to delete SGHF. </li>
+  <li> Try to add cnd_12 again. </li>
+  <li> Clear Conditions </li>
+  <li> Clear Trails </li>
+</ol>
+<hr>
+<table ng-app='sp5App' ng-controller='task_ctrl'>
+<tr> <!-- row 1 -->
+  <td> <!-- col 11 -->
+    <font color="red">{{trial_error}}</font><br>
+    <table>
+     <tr> 
+        <td>Name</td> 
+        <td><input type="text" ng-model="new_trial" required/></td> 
+    </tr>  
+    <tr>
+        <td>Definition</td> 
+        <td><input type="text" ng-model="new_trial_def" required/></td>
+    <tr>
+        <td>Reference </td>
+        <td><input type="text" ng-model="new_trial_ref" required/></td>
+    </tr>
+    </table> <br>
+    <a href ng-click="add_trial()">Add Trial</a> | 
+    <a href ng-click="add_trial_clear()">Clear</a>
+  </td> <!-- col 11 --> 
+  <td valign="top" ng-show="trial_design.length > 0"> 
+    <b> Trial Designs </b>
+    <table border="1"> 
+       <tr> 
+           <td> Trial Name </td> 
+           <td> Definition </td> 
+           <td> Reference  </td> 
+           <td> uuid       </td> 
+           <td> Remove     </td> 
+       </tr>
+       <tr ng-repeat="trial in trial_design">
+           <td>{{trial.name}}       </td> 
+           <td>{{trial.definition}} </td>
+           <td>{{trial.reference}}  </td>
+           <td>{{trial.uuid}}       </td>
+           <td><a href ng-click="remove_trial(trial.uuid)">X</a></td>
+       </tr>
+    </table>
+   </td> <!-- col 12 -->
+</tr> <!-- row 1 -->
+<tr> <!-- row 2 -->
+    <td><font color="red">{{condition_error}}</font></td> <!-- col 21 -->
+    <td>
+         <a href ng-click="design_condition()">Design Condition Codes</a> |
+         <a href ng-click="design_condition_clear()">Clear</a>
+    </td> <!-- col 22 -->
+</tr> <!-- row 2 -->
+<tr ng-show="design_condition_on > 0"> <!-- row 3 -->
+ <td> <!-- col 31 -->
+    Select tasks: <br>
+    <select ng-model="select_design_tasks" 
+            ng-options="x.name for x in trial_design" multiple> </select>
+ </td>
+ <td> <!-- col 32 -->
+    <table>
+     <tr> 
+        <td>Condition Name or Code</td> 
+        <td><input type="text" ng-model="new_condition" required/></td> 
+    </tr>  
+    <tr>
+        <td>Definition</td> 
+        <td><input type="text" ng-model="new_condition_def" required/></td>
+    <tr>
+        <td>Tasks Selected </td>
+        <td> <div ng-repeat="stask in select_design_tasks">{{stask.name}}</div></td>
+    </tr>
+    </table>
+    <br>  
+         <a href ng-click="add_condition()">Add Condition</a><br>
+ </td>  <!-- col 32 -->
+ </tr>  <!-- row 3  -->
+ <tr>   <!-- row 4  -->
+ <td>   <!-- col 41 -->
+ </td>  <!-- col 41 --> 
+  <td valign="top" ng-show="condition_design.length > 0"> <!-- col 42 -->
+    <b> Condition Designs </b>
+    <table border="1"> 
+       <tr> 
+           <td> Condition Name </td> 
+           <td> Definition     </td> 
+           <td> Tasks          </td> 
+           <td> uuid           </td> 
+           <td> Remove         </td> 
+       </tr>
+       <tr ng-repeat="condition in condition_design">
+           <td>{{condition.name}}       </td> 
+           <td>{{condition.definition}} </td>
+           <td>{{condition.tasks}}      </td>
+           <td>{{condition.uuid}}       </td>
+           <td><a href ng-click="remove_condition(condition.uuid)">X</a></td>
+       </tr>
+    </table>
+   </td> <!-- col 42 -->
+ </tr>  <!-- row 4 -->
+</table>
+<br>
+<hr>
+<table>
+<tr>
+<td>
+<img src="gnode.png" alt="The German Neuroinformatics Node">
+</td>
+<td>
+<h5>(c) 2017 <br>The German Neuroinformatics Node <br> <a href="http://www.g-node.org/">G-Node</a></h5>
+<h6><a href="mailto:dev@g-node.org">Contact</a></h6>
+</td>
+</tr>
+</table>
+</body>
+</html>
+

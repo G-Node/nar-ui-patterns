@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<!-- 
+ * 
+ * 
+ * A demo for hierarchical entry with multiple selections.
+ *
+ * 
+ * Released under the MIT License
+ * --------------------------------------------------------------------------------
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2017 
+ * M. Suzen 
+ * The German Neuroinformatics Node
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy 
+ * of this software and associated documentation files (the "Software"), to deal 
+ * in the Software without restriction, including without limitation the rights 
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell 
+ * copies of the Software, and to permit persons to whom the Software is 
+ * furnished to do so, subject to the following conditions: 
+ *
+ * The above copyright notice and this permission notice shall be included in all 
+ * copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
+ * SOFTWARE.
+ * --------------------------------------------------------------------------------
+ *
+ -->
+
+<head>
+<title>A demo for hierarchical entry with multiple selections</title>
+<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.css">
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+<script>
+var app = angular.module('sp5App', []);
+app.controller('sp5Ctrl', function($scope) {
+    $scope.showCon= function(con) {
+        $scope.clickOn =con;
+    }
+    $scope.metadata = { 
+                       functional_imaging: { 
+                                             modalities: [
+                                                          'fMRI',
+                                                          //'MEG',
+                                                          //'NIRS',
+                                                          //'Optical_imaging',
+                                                          //'Imaging_calcium_dynamics',
+                                                          //'Two_photon_fluorescence_microscopy',
+                                                          'PET',
+                                                          'Electrophysiology_Single_Electrode' 
+                                                          //'SPECT'
+                                                         ],
+                                             fMRI: {
+                                                    scanner: ['Siemens VISION', 'Philips INTERA', 'fMRI_manufacturer_model_not_listed'],
+                                                    echo_time: 'echo_time', 
+                                                    repetions_time: 'repetions_time'
+                                                   },
+                                             PET:  {
+                                                    scanner: [
+                                                              'GE_Advance',
+                                                              'GE_Discovery_LS',
+                                                              'GE_Discovery_ST',
+                                                              'GE_Discovery_RX',
+                                                              'GE_Discovery_STE_VCT',
+                                                              'GE_other_model',
+                                                              'Siemens_Accel_exact',
+                                                              'Siemens_HiRes_model_1080',
+                                                              'Siemens_Biograph_1043_1024',
+                                                              'Siemens_Biograph_TruePoint_1093_1094',
+                                                              'Siemens_BioGraph_mCT',
+                                                              'Siemens_HR_+',
+                                                              'Siemens_HRRT',
+                                                              'Siemens_other_model',
+                                                              'Philips_Allegro',
+                                                              'Philips_Gemini',
+                                                              'Philips_Gemini_GXL',
+                                                              'Philips_Gemini_TF',
+                                                              'Philips_other_model',
+                                                              'PET_manufacturer_model_not_listed'
+                                                             ]
+                                                   },
+                                             ephy_se: {
+                                                       electrode_type: [
+                                                                        'extracellular',
+                                                                        'intracellular_sharp',
+                                                                        'intracellular_patch',
+                                                                        'other_electrode_type_not_listed'
+                                                                       ],
+                                                       contact_shape:  [
+                                                                        "ring",
+                                                                        "tip",
+                                                                        "square"
+                                                                       ]
+                                                      }
+                                           } 
+                      }
+    $scope.clear_functional_imaging_modalities= function () {
+        $scope.functional_imaging_model= "";
+        $scope.fMRI_scanner_model= "";
+        $scope.fMRI_echo_time_model= "";
+        $scope.PET_scanner_model= "";
+    };
+    $scope.clear_fMRI = function () {
+        $scope.fMRI_scanner_model= "";
+        $scope.fMRI_echo_time_model= "";
+        $scope.help= "";
+    }
+    $scope.clear_PET_scanner= function () {
+        $scope.PET_scanner_model= "";
+    }
+    $scope.clear_ephys_se = function() {
+      $scope.ephys_se_electrode_type_model = "",
+      $scope.ephys_se_contact_shape_model  = ""
+    }
+    $scope.showJson = function() {
+      $scope.metadata_filled = { 
+                                functional_imaging: {
+                                                   modalities: $scope.functional_imaging_model,
+                                                   fMRI: {
+                                                          scanner:$scope.fMRI_scanner_model,
+                                                          echo_time:$scope.fMRI_echo_time_model
+                                                         },
+                                                   PET: {
+                                                         scanner:$scope.PET_scanner_model
+                                                        },
+                                                   ephy_se: {
+                                                             electrode_type: $scope.ephys_se_electrode_type_model,
+                                                             contact_shape: $scope.ephys_se_contact_shape_model
+                                                            }
+                                                  }
+                              }
+        $scope.json_filled = angular.toJson($scope.metadata_filled);
+    }
+    $scope.clearJson = function() {
+        $scope.json_filled = ""
+    }
+});
+</script>
+</head>
+
+<body>
+<h4> SP5 Metadata: </h4>
+<h5> Pattern: Multi-select entry with conditional UI presentation based on selections.</h5>
+<h5> Portion of Experiment entries. </h5>
+ <ul>
+  <li> 
+      Allow selection of more than one selection.
+  </li>
+  <li> 
+     Show and ask for only relevant metadata. 
+     For example if fMRI is not selected there is no need to show metadata related to fMRI.
+  </li>
+ </ul>
+<hr>
+<div ng-app="sp5App" ng-controller="sp5Ctrl"> 
+          <small> Mock-up of PET/fMRI/Electrophysiology(Single electrode) metadata: 
+                 <br> Use Ctrl to select more than one method.</small> <br>
+          <b>Functional Imaging/Experimental method </b>  
+          <small><a href="" data-ng-click="clear_functional_imaging_modalities()">clear</a></small> <br>
+          <select ng-model="functional_imaging_model" 
+                  ng-options="x for x in metadata.functional_imaging.modalities" multiple> </select>
+          <table>
+          <tr> 
+          <td ng-show="functional_imaging_model.indexOf('fMRI') > -1">
+               <b> fMRI </b> <small><a href="" data-ng-click="clear_fMRI()">clear</a></small> <br>
+               <div title="A MRI machine manufacturer used to produce functional images.">Scanner: <br> 
+               <select ng-model="fMRI_scanner_model" ng-options="x for x in metadata.functional_imaging.fMRI.scanner"
+ multiple> </select><br>
+               </div>
+               <div title="fMRI Echo Time: Define the time between the application of radiofrequency excitation pulse and the peak of the signal induced in the coil. Typically 20-40 ms">
+               Echo-time (ms) :
+               <input type="text" name="fMRI_echo_time_text" ng-model="fMRI_echo_time_model">
+               </div>
+          </td>
+          <td>
+          <td ng-show="functional_imaging_model.indexOf('PET') > -1">
+               <b> PET</b> 
+               <small><a href="" data-ng-click="clear_PET_scanner()">clear</a></small> <br>
+               <div title="A PET machine manufacturer used to produce functional images.">Scanner: <br>
+               <select ng-model="PET_scanner_model" ng-options="x for x in metadata.functional_imaging.PET.scanner" multiple> </select>
+               </div>
+          </td>
+          <td ng-show="functional_imaging_model.indexOf('Electrophysiology_Single_Electrode') > -1">
+               <b>Electrophysiology (Single Electrode)</b>
+               <small><a href="" data-ng-click="clear_ephys_se()">clear</a></small> <br>
+               <div title="Type of microelectrode used in performing the recording">Electrode Type:<br>
+               <select ng-model="ephys_se_electrode_type_model" 
+                       ng-options="x for x in metadata.functional_imaging.ephy_se.electrode_type">
+               <option value="" selected="selected">Choose</option>
+               </select> </div>
+               <div title="Tip of the recording microelectrode.">Electrode Contact Shape:<br></div>
+               <select ng-model="ephys_se_contact_shape_model" 
+                       ng-options="x for x in metadata.functional_imaging.ephy_se.contact_shape">
+               <option value="" selected="selected">Choose</option>
+               </select>
+          </td>
+          </tr>
+        </table>
+ <hr>
+Provided metadata<br>
+ <h6>JSON: 
+          <a href="" data-ng-click="showJson()">Show</a> | 
+          <a href="" data-ng-click="clearJson()">Clear</a> | 
+    {{json_filled}} 
+ </h6>
+</div>
+<table>
+<tr>
+<td>
+<img src="gnode.png" alt="The German Neuroinformatics Node">
+</td>
+<td>
+<h5>(c) 2017 <br>The German Neuroinformatics Node <br> <a href="http://www.g-node.org/">G-Node</a></h5>
+<h6><a href="mailto:dev@g-node.org">Contact</a></h6>
+</td>
+</tr>
+</table>
+</body>
+</html>
